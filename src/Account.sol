@@ -18,13 +18,9 @@ contract smartAccount is IAccount {
     ) external view returns (uint256 validationData) {
         // typically here we'd check this signature
         address recovered = ECDSA.recover(
-            ECDSA.toEthSignedMessageHash(
-                keccak256(abi.encodePacked(keccak256("wee")))
-            ),
-            op.signature
+            ECDSA.toEthSignedMessageHash(keccak256("wee")),op.signature
         );
-        return recovered == owner ? 0 : 1;
-        // return 0;
+        return recovered == owner ? 1 : 0;
     }
 
     // this is our state changing function, which could be called anything

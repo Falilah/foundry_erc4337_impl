@@ -15,8 +15,8 @@ contract CounterEntryPoint is Test {
     Paymaster paymaster;
     signUtils sign;
 
-    Account Owner = makeAccount("Owner");
-    
+    // Account Owner = makeAccount("Owner");
+    address ownr = 0xB33F98b2173222D88BAc8d77c4aED1e240E70c21;
 
     function setUp() public {
         entryPoint = new MyEntryPoint();
@@ -26,29 +26,22 @@ contract CounterEntryPoint is Test {
         vm.deal(address(this), 10 ether);
     }
 
-    // function testAddress() public view {
-    //     console2.log(address(entryPoint));
-    // }
-
     function testAA() public {
         bytes memory data = abi.encodeWithSignature(
             "createAccount(address)",
-            Owner.addr
+            ownr
         );
         bytes memory initcode = abi.encodePacked(address(factory), data);
-        address senderAddress = 0xffD4505B3452Dc22f8473616d50503bA9E1710Ac;
-        // address senderAddress = getAddress(initcode);
 
+        address senderAddress = 0xffD4505B3452Dc22f8473616d50503bA9E1710Ac;
         uint nonce = entryPoint.getNonce(senderAddress, 0);
 
         bytes memory _calldata = abi.encodeWithSignature("execute()");
         bytes memory paymasterData = abi.encodePacked((address(paymaster)));
 
-        bytes32 digest = sign.getTypedDataHash();
+        bytes
+            memory signature = hex"0231791f04365ae262e45c058ed9f362552e7cf47ebec533e2ddd52a03c143eb1f60da1fd6aac2934c8a8bd42f25bf521dc142cebd9f8d71391c0d8a466039c61c";
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(Owner.key, digest);
-        bytes memory signature = abi.encodePacked(r, s, v);
-    
         console2.logBytes(signature);
 
         entryPoint.depositTo{value: 2 ether}(address(paymaster));
@@ -66,6 +59,8 @@ contract CounterEntryPoint is Test {
             paymasterData,
             signature
         );
+
+        // entryPoint.getUserOpHash(UO);
         address beneficiary = makeAddr("Beneficiary");
         UserOperation[] memory batch = new UserOperation[](1);
         batch[0] = UO;
@@ -76,7 +71,7 @@ contract CounterEntryPoint is Test {
         AbiSender = smartAccount(senderAddress);
         AbiSender.count();
         address _owner = AbiSender.owner();
-        assertEq(Owner.addr, _owner);
+        assertEq(ownr, _owner);
     }
 
     function getAddress(
@@ -89,5 +84,8 @@ contract CounterEntryPoint is Test {
                 senderAddress = abi.decode(bytes(stat), (address));
             }
         }
+    }
+    function testgetHash() public {
+        sign.getHash();
     }
 }
